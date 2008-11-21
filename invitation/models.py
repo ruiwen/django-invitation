@@ -62,6 +62,9 @@ class InvitationKey(models.Model):
     
     objects = InvitationKeyManager()
     
+    def __unicode__(self):
+        return u"Invitation from %s on %s" % (self.from_user.username, self.date_invited)
+    
     def key_expired(self):
         """
         Determine whether this ``InvitationKey`` has expired, returning 
