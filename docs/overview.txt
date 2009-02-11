@@ -4,7 +4,9 @@ Django invitation
 
 
 This is a fairly simple user-invitation application for Django_,
-designed to make allowing user signups as painless as possible.
+designed to make allowing user signups as painless as possible
+with quota restrictions: you need to be invited by someone else and
+the number of invitations is limited by user.
 
 .. _Django: http://www.djangoproject.com/
 
@@ -43,7 +45,7 @@ Installing from a Mercurial checkout
 If you have `Mercurial`_ installed on your computer, you can also
 obtain a complete copy of django-invitation by typing::
 
-    hg clone http://bitbucket.org/david/django-invitation/
+    hg clone http://code.welldev.org/django-invitation/
 
 Inside the resulting "django-invitation" directory will be a
 directory named "invitation", which is the actual Python module for
@@ -146,6 +148,10 @@ If the activation key has expired (this is controlled by the setting
 be reachable (see the section on maintenance below for instructions on 
 cleaning out expired keys which have not been used).
 
+Alternatively, you can directly redirect the user to the registration view
+with the ``registration_key`` argument as a GET (or POST) parameter in order 
+to verify if this user is allowed to register.
+
 
 Maintenance
 ===========
@@ -176,5 +182,5 @@ Head over to this application's `project page on Bitbucket`_ and
 check `the issues list`_ to see if it's already been reported. If not,
 open a new issue and I'll do my best to respond quickly.
 
-.. _project page on Bitbucket: http://www.bitbucket.org/david/django-invitation/overview/
-.. _the issues list: http://www.bitbucket.org/david/django-invitation/issues/
+.. _project page on Bitbucket: http://code.welldev.org/django-invitation/
+.. _the issues list: http://code.welldev.org/django-invitation/issues/
