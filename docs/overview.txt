@@ -152,6 +152,10 @@ Alternatively, you can directly redirect the user to the registration view
 with the ``registration_key`` argument as a GET (or POST) parameter in order 
 to verify if this user is allowed to register.
 
+The ``INVITATIONS_PER_USER`` setting (integer) let you decide the initial 
+number of invitations left per user. Each new email sent consume one 
+invitation.
+
 
 Maintenance
 ===========
