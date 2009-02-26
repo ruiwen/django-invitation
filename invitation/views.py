@@ -31,8 +31,9 @@ def register(request, success_url=None,
     if 'INVITE_MODE' in settings.get_all_members() and settings.INVITE_MODE:
         if 'invitation_key' in request.REQUEST \
             and is_key_valid(request.REQUEST['invitation_key']):
+            invitation_key = request.REQUEST['invitation_key']
             if extra_context is None:
-                extra_context = {'invitation_key': request.REQUEST['invitation_key']}
+                extra_context = {'invitation_key': invitation_key}
             else:
                 extra_context.update({'invitation_key': invitation_key})
             return registration_register(request, success_url, form_class, 
