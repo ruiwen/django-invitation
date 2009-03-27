@@ -140,6 +140,7 @@ class InvitationViewTests(InvitationTestCase):
         """
         # You need to be logged in to send an invite.
         response = self.client.login(username='alice', password='secret')
+        remaining_invitations = InvitationKey.objects.remaining_invitations_for_user(self.sample_user)
         
         # Invalid email data fails.
         response = self.client.post(reverse('invitation_invite'),
@@ -153,6 +154,7 @@ class InvitationViewTests(InvitationTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], 'http://testserver%s' % reverse('invitation_complete'))
         self.assertEqual(InvitationKey.objects.count(), 3)
+        self.assertEqual(InvitationKey.objects.remaining_invitations_for_user(self.sample_user), remaining_invitations-1)
     
     def test_activated_view(self):
         """
