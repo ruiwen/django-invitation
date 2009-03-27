@@ -1,0 +1,17 @@
+syntax:glob
+
+*.elc
+*.pyc
+*~
+*.orig
+*.log
+*.swp
+*.tmp
+*.DS_Store
+testdb.sqlite
+registration/*.py
+registration/locale
+registration/management
+django_invitation.egg-info
+dist/*
+setuptools_hg-*.egg
