@@ -15,3 +15,6 @@ registration/management
 django_invitation.egg-info
 dist/*
 setuptools_hg-*.egg
+examples/invitation_project/django-invitation.wpr
+examples/invitation_project/django-invitation.wpu
+
