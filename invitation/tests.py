@@ -166,22 +166,22 @@ class InvitationViewTests(InvitationTestCase):
         response = self.client.get(reverse('invitation_invited',
                                            kwargs={ 'invitation_key': self.sample_key.key }))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template.name, 'invitation/invited.html')
+        self.assertTemplateUsed(response, 'invitation/invited.html')
 
         # Expired key use the wrong key template.
         response = self.client.get(reverse('invitation_invited',
                                            kwargs={ 'invitation_key': self.expired_key.key }))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template.name, 'invitation/wrong_invitation_key.html')
+        self.assertTemplateUsed(response, 'invitation/wrong_invitation_key.html')
 
         # Invalid key use the wrong key template.
         response = self.client.get(reverse('invitation_invited',
                                            kwargs={ 'invitation_key': 'foo' }))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template.name, 'invitation/wrong_invitation_key.html')
+        self.assertTemplateUsed(response, 'invitation/wrong_invitation_key.html')
 
         # Nonexistent key use the wrong key template.
         response = self.client.get(reverse('invitation_invited',
                                            kwargs={ 'invitation_key': sha.new('foo').hexdigest() }))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template.name, 'invitation/wrong_invitation_key.html')
+        self.assertTemplateUsed(response, 'invitation/wrong_invitation_key.html')
