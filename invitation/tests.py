@@ -149,12 +149,24 @@ class InvitationViewTests(InvitationTestCase):
         self.failUnless(response.context['form'])
         self.failUnless(response.context['form'].errors)
 
+        # Valid email data succeeds.
         response = self.client.post(reverse('invitation_invite'),
                                     data={ 'email': 'foo@example.com' })
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], 'http://testserver%s' % reverse('invitation_complete'))
         self.assertEqual(InvitationKey.objects.count(), 3)
         self.assertEqual(InvitationKey.objects.remaining_invitations_for_user(self.sample_user), remaining_invitations-1)
+        
+        # Once remaining invitations exhausted, you fail again.
+        while InvitationKey.objects.remaining_invitations_for_user(self.sample_user) > 0:
+            self.client.post(reverse('invitation_invite'),
+                             data={'email': 'foo@example.com'})
+        self.assertEqual(InvitationKey.objects.remaining_invitations_for_user(self.sample_user), 0)
+        response = self.client.post(reverse('invitation_invite'),
+                                    data={'email': 'foo@example.com'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['remaining_invitations'], 0)
+        self.failUnless(response.context['form'])
     
     def test_activated_view(self):
         """
