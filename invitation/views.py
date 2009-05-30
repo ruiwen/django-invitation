@@ -11,6 +11,7 @@ from invitation.models import InvitationKey
 from invitation.forms import InvitationKeyForm
 
 is_key_valid = InvitationKey.objects.is_key_valid
+remaining_invitations_for_user = InvitationKey.objects.remaining_invitations_for_user
 
 # TODO: move the authorization control to a dedicated decorator
 
@@ -47,9 +48,10 @@ def register(request, success_url=None,
 def invite(request, success_url=None,
             form_class=InvitationKeyForm,
             template_name='invitation/invitation_form.html',):
+    remaining_invitations = remaining_invitations_for_user(request.user)
     if request.method == 'POST':
         form = form_class(data=request.POST, files=request.FILES)
-        if form.is_valid():
+        if remaining_invitations > 0 and form.is_valid():
             invitation = InvitationKey.objects.create_invitation(request.user)
             invitation.send_to(form.cleaned_data["email"])
             # success_url needs to be dynamically generated here; setting a
@@ -61,6 +63,6 @@ def invite(request, success_url=None,
         form = form_class()
     return direct_to_template(request, template_name, {
         'form': form,
-        'remaining_invitations': InvitationKey.objects.remaining_invitations_for_user(request.user),
+        'remaining_invitations': remaining_invitations,
     })
 invite = login_required(invite)
