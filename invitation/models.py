@@ -38,7 +38,7 @@ class InvitationKeyManager(models.Manager):
         from a combination of the ``User``'s username and a random salt.
         """
         salt = sha_constructor(str(random.random())).hexdigest()[:5]
-        key = sha_constructor(salt+user.username).hexdigest()
+        key = sha_constructor("%s%s%s" % (datetime.datetime.now(), salt, user.username)).hexdigest()
         return self.create(from_user=user, key=key)
 
     def remaining_invitations_for_user(self, user):
