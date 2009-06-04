@@ -21,8 +21,7 @@ def invited(request, invitation_key=None, extra_context=None):
             template_name = 'invitation/invited.html'
         else:
             template_name = 'invitation/wrong_invitation_key.html'
-        if extra_context is None:
-            extra_context = {}
+        extra_context = extra_context is not None and extra_context.copy() or {}
         extra_context.update({'invitation_key': invitation_key})
         return direct_to_template(request, template_name, extra_context)
     else:
@@ -32,8 +31,7 @@ def register(request, success_url=None,
             form_class=RegistrationForm, profile_callback=None,
             template_name='registration/registration_form.html',
             extra_context=None):
-    if extra_context is None:
-        extra_context = {}
+    extra_context = extra_context is not None and extra_context.copy() or {}
     if 'INVITE_MODE' in settings.get_all_members() and settings.INVITE_MODE:
         if 'invitation_key' in request.REQUEST:
             if is_key_valid(request.REQUEST['invitation_key']):
@@ -55,8 +53,7 @@ def invite(request, success_url=None,
             form_class=InvitationKeyForm,
             template_name='invitation/invitation_form.html', 
             extra_context=None):
-    if extra_context is None:
-        extra_context = {}
+    extra_context = extra_context is not None and extra_context.copy() or {}
     remaining_invitations = remaining_invitations_for_user(request.user)
     if request.method == 'POST':
         form = form_class(data=request.POST, files=request.FILES)
