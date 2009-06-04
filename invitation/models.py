@@ -88,12 +88,13 @@ class InvitationKey(models.Model):
         current_site = Site.objects.get_current()
         
         subject = render_to_string('invitation/invitation_email_subject.txt',
-                                   { 'site': current_site })
+                                   { 'site': current_site, 
+                                     'invitation_key': self })
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         
         message = render_to_string('invitation/invitation_email.txt',
-                                   { 'invitation_key': self.key,
+                                   { 'invitation_key': self,
                                      'expiration_days': settings.ACCOUNT_INVITATION_DAYS,
                                      'site': current_site })
         
