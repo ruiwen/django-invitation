@@ -15,13 +15,16 @@ remaining_invitations_for_user = InvitationKey.objects.remaining_invitations_for
 
 # TODO: move the authorization control to a dedicated decorator
 
-def invited(request, invitation_key=None):
+def invited(request, invitation_key=None, extra_context=None):
     if 'INVITE_MODE' in settings.get_all_members() and settings.INVITE_MODE:
         if invitation_key and is_key_valid(invitation_key):
-            template = 'invitation/invited.html'
+            template_name = 'invitation/invited.html'
         else:
-            template = 'invitation/wrong_invitation_key.html'
-        return direct_to_template(request, template, {'invitation_key': invitation_key})
+            template_name = 'invitation/wrong_invitation_key.html'
+        if extra_context is None:
+            extra_context = {}
+        extra_context.update({'invitation_key': invitation_key})
+        return direct_to_template(request, template_name, extra_context)
     else:
         return HttpResponseRedirect(reverse('registration_register'))
 
@@ -29,25 +32,31 @@ def register(request, success_url=None,
             form_class=RegistrationForm, profile_callback=None,
             template_name='registration/registration_form.html',
             extra_context=None):
+    if extra_context is None:
+        extra_context = {}
     if 'INVITE_MODE' in settings.get_all_members() and settings.INVITE_MODE:
-        if 'invitation_key' in request.REQUEST \
-            and is_key_valid(request.REQUEST['invitation_key']):
-            invitation_key = request.REQUEST['invitation_key']
-            if extra_context is None:
-                extra_context = {'invitation_key': invitation_key}
-            else:
+        if 'invitation_key' in request.REQUEST:
+            if is_key_valid(request.REQUEST['invitation_key']):
+                invitation_key = request.REQUEST['invitation_key']
                 extra_context.update({'invitation_key': invitation_key})
-            return registration_register(request, success_url, form_class, 
-                        profile_callback, template_name, extra_context)
+                return registration_register(request, success_url, form_class, 
+                            profile_callback, template_name, extra_context)
+            else:
+                extra_context.update({'invalid_key': True})
         else:
-            return direct_to_template(request, 'invitation/wrong_invitation_key.html')
+            extra_context.update({'no_key': True})
+        template_name = 'invitation/wrong_invitation_key.html'
+        return direct_to_template(request, template_name, extra_context)
     else:
         return registration_register(request, success_url, form_class, 
                             profile_callback, template_name, extra_context)
 
-def invite(request, success_url=None,
+def invite(request, success_url=None, 
             form_class=InvitationKeyForm,
-            template_name='invitation/invitation_form.html',):
+            template_name='invitation/invitation_form.html', 
+            extra_context=None):
+    if extra_context is None:
+        extra_context = {}
     remaining_invitations = remaining_invitations_for_user(request.user)
     if request.method == 'POST':
         form = form_class(data=request.POST, files=request.FILES)
@@ -61,8 +70,9 @@ def invite(request, success_url=None,
             return HttpResponseRedirect(success_url or reverse('invitation_complete'))
     else:
         form = form_class()
-    return direct_to_template(request, template_name, {
-        'form': form,
-        'remaining_invitations': remaining_invitations,
-    })
+    extra_context.update({
+            'form': form,
+            'remaining_invitations': remaining_invitations,
+        })
+    return direct_to_template(request, template_name, extra_context)
 invite = login_required(invite)
