@@ -98,7 +98,7 @@ The views included in django-invitation make use of five templates:
 * ``invitation/invitation_email.txt`` is used for the body of the
   invitation email.
 
-* ``invitation/invite.html`` is displayed when a user attempts to
+* ``invitation/invited.html`` is displayed when a user attempts to
   register his/her account.
 
 * ``invitation/wrong_invitation_key.html`` is displayed when a user
