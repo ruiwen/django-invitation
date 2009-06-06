@@ -197,3 +197,38 @@ class InvitationViewTests(InvitationTestCase):
                                            kwargs={ 'invitation_key': sha.new('foo').hexdigest() }))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'invitation/wrong_invitation_key.html')
+
+    def test_register_view(self):
+        """
+        Test that after registration a key cannot be reused.
+        """
+        registration_data = {
+            'invitation_key': self.sample_key.key,
+            'username': 'new_user',
+            'email': 'newbie@example.com',
+            'password1': 'sekret',
+            'password2': 'sekret',
+            'tos': '1'}
+        
+        # The first use of the key to register a new user works.
+        response = self.client.post(reverse('registration_register'), 
+                                    data=registration_data)
+        self.assertEqual(response.status_code, 302)
+        redirect_location = response._headers['location'][1]
+        self.assertTrue(redirect_location.endswith(
+                        reverse('registration_complete')))
+        user = User.objects.get(username='new_user')        
+
+        # Trying to reuse the same key then fails.
+        registration_data['username'] = 'even_newer_user'
+        response = self.client.post(reverse('registration_register'), 
+                                    data=registration_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 
+                                'invitation/wrong_invitation_key.html')
+        try:        
+            even_new_user = User.objects.get(username='even_newer_user')
+            self.fail("Invitation already used - No user should be created.")
+        except User.DoesNotExist:
+            pass
+ 
