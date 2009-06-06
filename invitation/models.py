@@ -14,21 +14,28 @@ from django.contrib.sites.models import Site
 from registration.models import SHA1_RE
 
 class InvitationKeyManager(models.Manager):
+    def get_key(self, invitation_key):
+        """
+        Return InvitationKey, or None if it doesn't (or shouldn't) exist.
+        """
+        # Don't bother hitting database if invitation_key doesn't match pattern.
+        if not SHA1_RE.search(invitation_key):
+            return None
+        
+        try:
+            key = self.get(key=invitation_key)
+        except self.model.DoesNotExist:
+            return None
+        
+        return key
+        
     def is_key_valid(self, invitation_key):
         """
         Check if an ``InvitationKey`` is valid or not, returning a boolean,
         ``True`` if the key is valid.
         """
-        # Make sure the key we're trying conforms to the pattern of a
-        # SHA1 hash; if it doesn't, no point trying to look it up in
-        # the database.
-        if SHA1_RE.search(invitation_key):
-            try:
-                invitation_key = self.get(key=invitation_key)
-            except self.model.DoesNotExist:
-                return False
-            return not invitation_key.key_expired()
-        return False
+        invitation_key = self.get_key(invitation_key)
+        return invitation_key and invitation_key.is_usable()
 
     def create_invitation(self, user):
         """
@@ -58,12 +65,21 @@ class InvitationKey(models.Model):
     key = models.CharField(_('invitation key'), max_length=40)
     date_invited = models.DateTimeField(_('date invited'), 
                                         default=datetime.datetime.now)
-    from_user = models.ForeignKey(User)
+    from_user = models.ForeignKey(User, 
+                                  related_name='invitations_sent')
+    registrant = models.ForeignKey(User, null=True, blank=True, 
+                                  related_name='invitations_used')
     
     objects = InvitationKeyManager()
     
     def __unicode__(self):
         return u"Invitation from %s on %s" % (self.from_user.username, self.date_invited)
+    
+    def is_usable(self):
+        """
+        Return whether this key is still valid for registering a new user.        
+        """
+        return self.registrant is None and not self.key_expired()
     
     def key_expired(self):
         """
@@ -81,6 +97,13 @@ class InvitationKey(models.Model):
         return self.date_invited + expiration_date <= datetime.datetime.now()
     key_expired.boolean = True
     
+    def mark_used(self, registrant):
+        """
+        Note that this key has been used to register a new user.
+        """
+        self.registrant = registrant
+        self.save()
+        
     def send_to(self, email):
         """
         Send an invitation email to ``email``.

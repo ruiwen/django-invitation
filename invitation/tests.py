@@ -217,7 +217,9 @@ class InvitationViewTests(InvitationTestCase):
         redirect_location = response._headers['location'][1]
         self.assertTrue(redirect_location.endswith(
                         reverse('registration_complete')))
-        user = User.objects.get(username='new_user')        
+        user = User.objects.get(username='new_user')
+        key = InvitationKey.objects.get_key(self.sample_key.key)
+        self.assertEqual(user, key.registrant)
 
         # Trying to reuse the same key then fails.
         registration_data['username'] = 'even_newer_user'
