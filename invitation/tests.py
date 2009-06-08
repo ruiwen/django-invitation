@@ -27,7 +27,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from invitation import forms
-from invitation.models import InvitationKey
+from invitation.models import InvitationKey, InvitationUser
 
 class InvitationTestCase(TestCase):
     """
@@ -97,8 +97,32 @@ class InvitationModelTests(InvitationTestCase):
         """
         management.call_command('cleanupinvitation')
         self.assertEqual(InvitationKey.objects.count(), 1)
+        
+    def test_invitations_remaining(self):
+        """Test InvitationUser calculates remaining invitations properly."""
+        remaining_invites = InvitationKey.objects.remaining_invitations_for_user
 
+        # New user starts with settings.INVITATIONS_PER_USER
+        user = User.objects.create_user(username='newbie',
+                                        password='secret',
+                                        email='newbie@example.com')
+        self.assertEqual(remaining_invites(user), settings.INVITATIONS_PER_USER)
 
+        # After using some, amount remaining is decreased
+        used = InvitationKey.objects.filter(from_user=self.sample_user).count()
+        expected_remaining = settings.INVITATIONS_PER_USER - used
+        remaining = remaining_invites(self.sample_user)
+        self.assertEqual(remaining, expected_remaining)
+        
+        # Using Invitationuser via Admin, remaining can be increased
+        invitation_user = InvitationUser.objects.get(inviter=self.sample_user)
+        new_remaining = 2*settings.INVITATIONS_PER_USER + 1
+        invitation_user.invitations_remaining = new_remaining
+        invitation_user.save()
+        remaining = remaining_invites(self.sample_user)
+        self.assertEqual(remaining, new_remaining)
+
+        
 class InvitationFormTests(InvitationTestCase):
     """
     Tests for the forms and custom validation logic included in

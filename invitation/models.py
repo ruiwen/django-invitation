@@ -52,8 +52,7 @@ class InvitationKeyManager(models.Manager):
         """
         Returns the number of remaining invitations for a given ``User``.
         """
-        inviteds_count = self.filter(from_user=user).count()
-        return settings.INVITATIONS_PER_USER - inviteds_count
+        return InvitationUser.objects.get(inviter=user).invitations_remaining
 
     def delete_expired_keys(self):
         for key in self.all():
@@ -124,3 +123,31 @@ class InvitationKey(models.Model):
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
 
         
+class InvitationUser(models.Model):
+    inviter = models.ForeignKey(User, unique=True)
+    invitations_remaining = models.IntegerField()
+
+    def __unicode__(self):
+        return u"InvitationUser for %s" % self.inviter.username
+
+    
+def user_post_save(sender, instance, created, **kwargs):
+    """Create InvitationUser for user when User is created."""
+    if created:
+        invitation_user = InvitationUser()
+        invitation_user.inviter = instance
+        invitation_user.invitations_remaining = settings.INVITATIONS_PER_USER
+        invitation_user.save()
+
+models.signals.post_save.connect(user_post_save, sender=User)
+
+def invitation_key_post_save(sender, instance, created, **kwargs):
+    """Decrement invitations_remaining when InvitationKey is created."""
+    if created:
+        invitation_user = InvitationUser.objects.get(inviter=instance.from_user)
+        remaining = invitation_user.invitations_remaining
+        invitation_user.invitations_remaining = remaining-1
+        invitation_user.save()
+
+models.signals.post_save.connect(invitation_key_post_save, sender=InvitationKey)
+
