@@ -52,9 +52,9 @@ def register(request, success_url=None,
     extra_context = extra_context is not None and extra_context.copy() or {}
     if 'INVITE_MODE' in settings.get_all_members() and settings.INVITE_MODE:
         if 'invitation_key' in request.REQUEST:
-            if is_key_valid(request.REQUEST['invitation_key']):
-                invitation_key = request.REQUEST['invitation_key']
-                extra_context.update({'invitation_key': invitation_key})
+            invitation_key = request.REQUEST['invitation_key']
+            extra_context.update({'invitation_key': invitation_key})
+            if is_key_valid(invitation_key):
                 profile_callback = InvitationUsedCallback(invitation_key, 
                                                           profile_callback)
                 return registration_register(request, success_url, form_class, 
