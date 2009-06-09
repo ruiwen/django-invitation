@@ -16,13 +16,13 @@ Overview
 
 This application enables a common user-invitation workflow:
 
-1. User fills out an invitation form, entering an email address.
+1. The inviting user fills out an invitation form, entering an email address.
 
 2. An invitation key is created, and an invitation link is sent to
-   the user's email address.
+   the invited user's email address.
 
-3. User clicks the invitation link, the
-   user is able to register in and begin contributing to your site.
+3. The invited user clicks the invitation link, and is then
+   able to register and begin contributing to your site.
 
 Various methods of extending and customizing the invitation process
 are also provided.
@@ -66,24 +66,32 @@ need to do the following:
 1. Add ``invitation`` to the ``INSTALLED_APPS`` setting of your
    Django project.
 
-2. Add the setting ``ACCOUNT_INVITATION_DAYS`` to your settings file;
-   this should be the number of days invitation keys will remain valid
-   after an invitation is sent.
+2. Set your django-invitation settings in your settings file.
 
-3. Create the necessary templates (see the section on templates below
-   for details).
+  * ``INVITE_MODE`` - Boolean.  Whether users are required to be
+    invited before registering.
+  * ``ACCOUNT_INVITATION_DAYS`` - Integer.  The number of days 
+    invitation keys will remain valid after an invitation is sent.
+  * ``INVITATIONS_PER_USER`` - Integer.  The number of invitations
+    that are initially allotted to each newly registered user.
 
-4. Add this line to your site's root URLConf **before registration urls**::
+3. Add this line to your site's root URLConf **before registration urls**::
    
        (r'^accounts/', include('invitation.urls')),
 
-5. Link people to ``/accounts/invite/`` so they can start inviting.
+4. Run `python manage.py syncdb` to update your database with the
+   django-invitation models.
+
+5. Create the necessary templates (see the section on templates below
+   for details).
+
+6. Link people to ``/accounts/invite/`` so they can start inviting.
 
 
 Templates used by django-invitation
 ===================================
 
-The views included in django-invitation make use of five templates:
+The views included in django-invitation make use of several templates:
 
 * ``invitation/invitation_form.html`` displays the invitation
   form for users to invite contacts.
@@ -122,13 +130,14 @@ Using the recommended default configuration, the URL
 (an instance of ``invitation.forms.InvitationKeyForm``); this form
 asks for an email address. It then does three things:
 
-1. Validates the form to be sure that's a valid email address.
+1. Validates the form to be sure it has a valid email address.
 
 2. Creates an instance of ``invitation.models.InvitationKey``,
-   stores an activation key (a SHA1 hash generated from the new user's
-   username plus a randomly-generated "salt").
+   stores an activation key (a SHA1 hash generated from the 
+   inviting user's username plus a timestamp and a 
+   randomly-generated "salt").
 
-3. Sends an email to the user (at the address they supplied)
+3. Sends an email to the invitee (at the supplied address)
    containing a link which can be clicked to register a new account.
 
 For details on customizing this process, including use of alternate
@@ -152,16 +161,17 @@ Alternatively, you can directly redirect the user to the registration view
 with the ``registration_key`` argument as a GET (or POST) parameter in order 
 to verify if this user is allowed to register.
 
-The ``INVITATIONS_PER_USER`` setting (integer) let you decide the initial 
-number of invitations left per user. Each new email sent consume one 
-invitation.
+The ``INVITATIONS_PER_USER`` setting (integer) lets you decide the initial 
+number of invitations left per user. Each new email sent consumes one 
+invitation.  (Administrators can use the Django Admin interface to modify
+the number of invitations a user has.)
 
 
 Maintenance
 ===========
 
 Inevitably, a site which uses a two-step process for user invitation --
-invitation followed by acceptation -- will accumulate a certain
+invitation followed by accepting -- will accumulate a certain
 number of keys which were created but never used. These
 keys clutter up the database, so it's desirable to clean them out
 periodically. For this purpose, a `Django command`_,
@@ -174,7 +184,7 @@ suitable for use as a regular cron job.
 Dependencies
 ============
 
-This application is built on top of django-registration, you need to install
+This application is built on top of django-registration.  You need to install
 this application (currently 0.7) and to resolve dependencies of this 
 application.
 
@@ -184,7 +194,7 @@ If you spot a bug
 
 Head over to this application's `project page on Bitbucket`_ and
 check `the issues list`_ to see if it's already been reported. If not,
-open a new issue and I'll do my best to respond quickly.
+open a new issue and we'll do our best to respond quickly.
 
 .. _project page on Bitbucket: http://code.welldev.org/django-invitation/
 .. _the issues list: http://code.welldev.org/django-invitation/issues/
