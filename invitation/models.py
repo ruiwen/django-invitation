@@ -50,9 +50,12 @@ class InvitationKeyManager(models.Manager):
 
     def remaining_invitations_for_user(self, user):
         """
-        Returns the number of remaining invitations for a given ``User``.
+        Return the number of remaining invitations for a given ``User``.
         """
-        return InvitationUser.objects.get(inviter=user).invitations_remaining
+        invitation_user, created = InvitationUser.objects.get_or_create(
+            inviter=user,
+            defaults={'invitations_remaining': settings.INVITATIONS_PER_USER})
+        return invitation_user.invitations_remaining
 
     def delete_expired_keys(self):
         for key in self.all():

@@ -121,6 +121,15 @@ class InvitationModelTests(InvitationTestCase):
         remaining = remaining_invites(self.sample_user)
         self.assertEqual(remaining, new_remaining)
 
+        # If no InvitationUser (for pre-existing/legacy User), one is created
+        old_sample_user = User.objects.create_user(username='lewis',
+                                                   password='secret',
+                                                   email='lewis@example.com')
+        old_sample_user.invitationuser_set.all().delete()
+        self.assertEqual(old_sample_user.invitationuser_set.count(), 0)
+        remaining = remaining_invites(old_sample_user)
+        self.assertEqual(remaining, settings.INVITATIONS_PER_USER)
+
         
 class InvitationFormTests(InvitationTestCase):
     """
