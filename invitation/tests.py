@@ -31,9 +31,10 @@ from invitation.models import InvitationKey, InvitationUser
 
 class InvitationTestCase(TestCase):
     """
-    Base class for the test cases; this sets up one user and two keys -- one
-    expired, one not -- which are used to exercise various parts of
-    the application.
+    Base class for the test cases.
+    
+    This sets up one user and two keys -- one expired, one not -- which are 
+    used to exercise various parts of the application.
     
     """
     def setUp(self):
@@ -44,6 +45,15 @@ class InvitationTestCase(TestCase):
         self.expired_key = InvitationKey.objects.create_invitation(user=self.sample_user)
         self.expired_key.date_invited -= datetime.timedelta(days=settings.ACCOUNT_INVITATION_DAYS + 1)
         self.expired_key.save()
+        
+        self.sample_registration_data = {
+            'invitation_key': self.sample_key.key,
+            'username': 'new_user',
+            'email': 'newbie@example.com',
+            'password1': 'secret',
+            'password2': 'secret',
+            'tos': '1'}
+        
 
     def assertRedirect(self, response, viewname):
         """Assert that response has been redirected to ``viewname``."""
@@ -241,16 +251,9 @@ class InvitationViewTests(InvitationTestCase):
         """
         Test that after registration a key cannot be reused.
         
-        """
-        registration_data = {
-            'invitation_key': self.sample_key.key,
-            'username': 'new_user',
-            'email': 'newbie@example.com',
-            'password1': 'sekret',
-            'password2': 'sekret',
-            'tos': '1'}
-        
+        """        
         # The first use of the key to register a new user works.
+        registration_data = self.sample_registration_data.copy()
         response = self.client.post(reverse('registration_register'), 
                                     data=registration_data)
         self.assertRedirect(response, 'registration_complete')
@@ -266,8 +269,53 @@ class InvitationViewTests(InvitationTestCase):
         self.assertTemplateUsed(response, 
                                 'invitation/wrong_invitation_key.html')
         try:        
-            even_new_user = User.objects.get(username='even_newer_user')
+            even_newer_user = User.objects.get(username='even_newer_user')
             self.fail("Invitation already used - No user should be created.")
         except User.DoesNotExist:
             pass
  
+        
+class InviteModeOffTests(InvitationTestCase):
+    """
+    Tests for the case where INVITE_MODE is False.
+    
+    (The test cases other than this one generally assume that INVITE_MODE is 
+    True.)
+    
+    """
+    def setUp(self):
+        super(InviteModeOffTests, self).setUp()
+        self.saved_invite_mode = settings.INVITE_MODE
+        settings.INVITE_MODE = False
+
+    def tearDown(self):
+        settings.INVITE_MODE = self.saved_invite_mode
+        super(InviteModeOffTests, self).tearDown()
+       
+    def test_invited_view(self):
+        """
+        Test that the invited view redirects to registration_register.
+       
+        """
+        response = self.client.get(reverse('invitation_invited',
+                            kwargs={ 'invitation_key': self.sample_key.key }))
+        self.assertRedirect(response, 'registration_register')
+
+    def test_register_view(self):
+        """
+        Test register view.  
+        
+        With INVITE_MODE = FALSE, django-invitation just passes this view on to
+        django-registration's register.
+       
+        """
+        # get
+        response = self.client.get(reverse('registration_register'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/registration_form.html')
+        
+        # post
+        response = self.client.post(reverse('registration_register'), 
+                                    data=self.sample_registration_data)
+        self.assertRedirect(response, 'registration_complete')
+        
