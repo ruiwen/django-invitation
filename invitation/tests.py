@@ -45,6 +45,13 @@ class InvitationTestCase(TestCase):
         self.expired_key.date_invited -= datetime.timedelta(days=settings.ACCOUNT_INVITATION_DAYS + 1)
         self.expired_key.save()
 
+    def assertRedirect(self, response, viewname):
+        """Assert that response has been redirected to ``viewname``."""
+        self.assertEqual(response.status_code, 302)
+        expected_location = 'http://testserver' + reverse(viewname)
+        redirect_location = response._headers['location'][1]
+        self.assertEqual(redirect_location, expected_location)      
+
 
 class InvitationModelTests(InvitationTestCase):
     """
@@ -246,10 +253,7 @@ class InvitationViewTests(InvitationTestCase):
         # The first use of the key to register a new user works.
         response = self.client.post(reverse('registration_register'), 
                                     data=registration_data)
-        self.assertEqual(response.status_code, 302)
-        redirect_location = response._headers['location'][1]
-        self.assertTrue(redirect_location.endswith(
-                        reverse('registration_complete')))
+        self.assertRedirect(response, 'registration_complete')
         user = User.objects.get(username='new_user')
         key = InvitationKey.objects.get_key(self.sample_key.key)
         self.assertEqual(user, key.registrant)
