@@ -59,8 +59,7 @@ class InvitationTestCase(TestCase):
         """Assert that response has been redirected to ``viewname``."""
         self.assertEqual(response.status_code, 302)
         expected_location = 'http://testserver' + reverse(viewname)
-        redirect_location = response._headers['location'][1]
-        self.assertEqual(redirect_location, expected_location)      
+        self.assertEqual(response['Location'], expected_location)      
 
 
 class InvitationModelTests(InvitationTestCase):
@@ -201,8 +200,7 @@ class InvitationViewTests(InvitationTestCase):
         # Valid email data succeeds.
         response = self.client.post(reverse('invitation_invite'),
                                     data={ 'email': 'foo@example.com' })
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], 'http://testserver%s' % reverse('invitation_complete'))
+        self.assertRedirect(response, 'invitation_complete')
         self.assertEqual(InvitationKey.objects.count(), 3)
         self.assertEqual(InvitationKey.objects.remaining_invitations_for_user(self.sample_user), remaining_invitations-1)
         
