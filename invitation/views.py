@@ -34,7 +34,7 @@ class InvitationUsedCallback(object):
 
             
 def invited(request, invitation_key=None, extra_context=None):
-    if 'INVITE_MODE' in settings.get_all_members() and settings.INVITE_MODE:
+    if 'INVITE_MODE' in dir(settings) and settings.INVITE_MODE:
         if invitation_key and is_key_valid(invitation_key):
             template_name = 'invitation/invited.html'
         else:
@@ -50,7 +50,7 @@ def register(request, success_url=None,
             template_name='registration/registration_form.html',
             extra_context=None):
     extra_context = extra_context is not None and extra_context.copy() or {}
-    if 'INVITE_MODE' in settings.get_all_members() and settings.INVITE_MODE:
+    if 'INVITE_MODE' in dir(settings) and settings.INVITE_MODE:
         if 'invitation_key' in request.REQUEST:
             invitation_key = request.REQUEST['invitation_key']
             extra_context.update({'invitation_key': invitation_key})
