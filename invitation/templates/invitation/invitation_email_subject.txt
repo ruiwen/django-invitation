@@ -1,0 +1,2 @@
+{% load i18n %}
+{% blocktrans with site.name as sitename %}You have been invited to join {{ sitename }}!{% endblocktrans %}

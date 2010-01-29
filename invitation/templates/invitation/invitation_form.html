@@ -1,0 +1,17 @@
+{% extends "page_base.html" %}
+{% load i18n %}
+
+{% block page_content %}
+
+<h2>{% trans "Invite a friend" %}</h2>
+
+<form action="{% url invitation_invite %}" method="POST">
+<table>
+{{form.as_table}}
+</table>
+
+<input type="submit" value="{% trans "Send Invitation" %}" />
+</form>
+
+
+{% endblock %}
