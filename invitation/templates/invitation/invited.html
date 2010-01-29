@@ -1,18 +1,10 @@
-{% extends "page_base.html" %}
+{% extends "invitation/base.html" %}
+{% load i18n %}
 
-{% block page_content %}
+{% block invitation_content %}
 
-<h2>You have been invited!</h2>
+<h2>{% trans "You have been invited!" %}</h2>
 
-<a href="{% url registration_register %}?invitation_key={{ invitation_key }}">Registration</a>
-
-<form action="{% url registration_register %}" method="POST">
-<input type="hidden" name="invitation_key" value="{{ invitation_key }}" />
-<table>
-{{form.as_table}}
-</table>
-
-<input type="submit" value="Submit" />
-</form>
+<a href="{% url registration_register %}?invitation_key={{ invitation_key }}">-&gt; {% trans "proceed to registration" %}</a>
 
 {% endblock %}

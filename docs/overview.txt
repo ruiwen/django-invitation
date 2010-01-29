@@ -82,8 +82,8 @@ need to do the following:
 4. Run `python manage.py syncdb` to update your database with the
    django-invitation models.
 
-5. Create the necessary templates (see the section on templates below
-   for details).
+5. Override the base template or individual invitation templates
+   (see the section on templates below for details).
 
 6. Link people to ``/accounts/invite/`` so they can start inviting.
 
@@ -91,7 +91,25 @@ need to do the following:
 Templates used by django-invitation
 ===================================
 
-The views included in django-invitation make use of several templates:
+The views included in django-invitation make use of several templates,
+which are provided by the application in a default version. To make use of these
+templates you are required to have
+
+    'django.template.loaders.app_directories.load_template_source'
+
+in your TEMPLATE_LOADERS settings.
+
+To adapt the default templates to the look and structure of your site, it may be
+sufficient to override the "invitation/base.html" template in your project's template
+directory. This template should be set up to inherit your site's base template like so::
+
+{% extends "my_base.html" %}
+{% block my_content_block %}
+{% block invitation_content %}{% endblock %}
+{% endblock %}
+
+For further customization you can also override individual templates in your
+site's templates directory.
 
 * ``invitation/invitation_form.html`` displays the invitation
   form for users to invite contacts.
@@ -111,9 +129,6 @@ The views included in django-invitation make use of several templates:
 
 * ``invitation/wrong_invitation_key.html`` is displayed when a user
   attempts to register his/her account with a wrong/expired key.
-
-Examples of all of these templates are not provided; you will need to
-create them yourself.
 
 Additionally, the URLConf provided with django-invitation includes
 URL patterns for useful views in Django's built-in authentication
