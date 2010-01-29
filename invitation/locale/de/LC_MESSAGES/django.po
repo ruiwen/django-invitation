@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-01-29 12:28+0100\n"
+"POT-Creation-Date: 2010-01-29 13:13+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,6 +24,10 @@ msgstr "Einladungscode"
 msgid "date invited"
 msgstr "Einladungsdatum"
 
+#: .\templates\invitation\base.html.py:6
+msgid "Untitled Page"
+msgstr ""
+
 #: .\templates\invitation\invitation_complete.html.py:6
 msgid "Invitation sent"
 msgstr "Die Einladung wurde verschickt!"
@@ -34,20 +38,19 @@ msgstr ""
 "Der/die Empfänger/in wird in Kürze eine Email mit deiner Einladung erhalten."
 
 #: .\templates\invitation\invitation_email.txt.py:2
-#: .\templates\invitation\invitation_email_subject.txt.py:2
 #, python-format
-msgid "You have been invited to join %(sitename)s!"
-msgstr "Du hast eine Einladung zu %(sitename)s bekommen!"
+msgid "You have been invited by %(username)s to join %(sitename)s!"
+msgstr "Du hast eine Einladung von %(username)s zu %(sitename)s bekommen!"
 
 #: .\templates\invitation\invitation_email.txt.py:4
 msgid "Go to"
 msgstr "Klick auf"
 
-#: .\templates\invitation\invitation_email.txt.py:4
+#: .\templates\invitation\invitation_email.txt.py:6
 msgid "to join!"
 msgstr "um mitzumachen!"
 
-#: .\templates\invitation\invitation_email.txt.py:6
+#: .\templates\invitation\invitation_email.txt.py:8
 #, python-format
 msgid ""
 "All the best,\n"
@@ -58,6 +61,11 @@ msgstr ""
 "\n"
 "Das %(sitename)s Team"
 
+#: .\templates\invitation\invitation_email_subject.txt.py:2
+#, python-format
+msgid "Invitation from %(username)s to join %(sitename)s"
+msgstr "Einladung von %(username)s zu %(sitename)s"
+
 #: .\templates\invitation\invitation_form.html.py:6
 msgid "Invite a friend"
 msgstr "Leute einladen"
@@ -65,3 +73,11 @@ msgstr "Leute einladen"
 #: .\templates\invitation\invitation_form.html.py:13
 msgid "Send Invitation"
 msgstr "Einladung abschicken"
+
+#: .\templates\invitation\invited.html.py:6
+msgid "You have been invited!"
+msgstr "Du wurdest eingeladen!"
+
+#: .\templates\invitation\invited.html.py:8
+msgid "proceed to registration"
+msgstr "Weiter zur Registrierung"
