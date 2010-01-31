@@ -7,7 +7,6 @@ syntax:glob
 *.log
 *.swp
 *.tmp
-*.mo
 *.DS_Store
 testdb.sqlite
 registration/*.py
