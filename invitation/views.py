@@ -45,7 +45,7 @@ def invited(request, invitation_key=None, extra_context=None):
     else:
         return HttpResponseRedirect(reverse('registration_register'))
 
-def register(request, success_url=None,
+def register(request, backend=None, success_url=None,
             form_class=RegistrationForm, profile_callback=None,
             template_name='registration/registration_form.html',
             extra_context=None):
@@ -57,7 +57,7 @@ def register(request, success_url=None,
             if is_key_valid(invitation_key):
                 profile_callback = InvitationUsedCallback(invitation_key, 
                                                           profile_callback)
-                return registration_register(request, success_url, form_class, 
+                return registration_register(request, backend, success_url, form_class, 
                             profile_callback, template_name, extra_context)
             else:
                 extra_context.update({'invalid_key': True})
