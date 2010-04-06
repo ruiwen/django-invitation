@@ -55,7 +55,6 @@ def register(request, backend=None, success_url=None,
             invitation_key = request.REQUEST['invitation_key']
             extra_context.update({'invitation_key': invitation_key})
             if is_key_valid(invitation_key):
-                # import ipdb; ipdb.set_trace()
                 backend='invitation.views.RegistrationBackend'
                 return registration_register(request, backend, success_url,
                                             form_class,
