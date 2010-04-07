@@ -10,29 +10,13 @@ from registration.backends import default as registration_backend
 
 from invitation.models import InvitationKey
 from invitation.forms import InvitationKeyForm
+from invitation.backends import InvitationBackend
 
 is_key_valid = InvitationKey.objects.is_key_valid
 remaining_invitations_for_user = InvitationKey.objects.remaining_invitations_for_user
 
-# TODO: move the authorization control to a dedicated decorator
-
-class RegistrationBackend(registration_backend.DefaultBackend):
-
-    def post_registration_redirect(self, request, user, *args, **kwargs):
-        """
-        Return the name of the URL to redirect to after successful
-        user registration.
-
-        """
-        invitation_key = request.REQUEST.get('invitation_key')
-        key = InvitationKey.objects.get_key(invitation_key)
-        if key:
-            key.mark_used(user)
-
-        return ('registration_complete', (), {})
-
 def invited(request, invitation_key=None, extra_context=None):
-    if 'INVITE_MODE' in dir(settings) and settings.INVITE_MODE:
+    if getattr(settings, 'INVITE_MODE', False):
         if invitation_key and is_key_valid(invitation_key):
             template_name = 'invitation/invited.html'
         else:
@@ -43,32 +27,30 @@ def invited(request, invitation_key=None, extra_context=None):
     else:
         return HttpResponseRedirect(reverse('registration_register'))
 
-def register(request, backend=None, success_url=None,
+def register(request, backend, success_url=None,
             form_class=RegistrationForm,
             disallowed_url='registration_disallowed',
             post_registration_redirect=None,
             template_name='registration/registration_form.html',
+            wrong_template_name='invitation/wrong_invitation_key.html',
             extra_context=None):
     extra_context = extra_context is not None and extra_context.copy() or {}
-    if 'INVITE_MODE' in dir(settings) and settings.INVITE_MODE:
-        if 'invitation_key' in request.REQUEST:
-            invitation_key = request.REQUEST['invitation_key']
+    if getattr(settings, 'INVITE_MODE', False):
+        invitation_key = request.REQUEST.get('invitation_key', False)
+        if invitation_key:
             extra_context.update({'invitation_key': invitation_key})
             if is_key_valid(invitation_key):
-                backend='invitation.views.RegistrationBackend'
                 return registration_register(request, backend, success_url,
-                                            form_class,
-                                            disallowed_url,
+                                            form_class, disallowed_url,
                                             template_name, extra_context)
             else:
                 extra_context.update({'invalid_key': True})
         else:
             extra_context.update({'no_key': True})
-        template_name = 'invitation/wrong_invitation_key.html'
-        return direct_to_template(request, template_name, extra_context)
+        return direct_to_template(request, wrong_template_name, extra_context)
     else:
-        return registration_register(request, success_url, form_class,
-                            profile_callback, template_name, extra_context)
+        return registration_register(request, backend, success_url, form_class,
+                                     disallowed_url, template_name, extra_context)
 
 def invite(request, success_url=None,
             form_class=InvitationKeyForm,
